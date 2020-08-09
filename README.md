@@ -4,7 +4,7 @@ Lotto game. At the beginning, 6 numbers from the range 1 - 49 should be entered.
 random numbers from the same range and check if the user has drawn identical numbers and then display the results.
 
 ## How to run app:
-Run the following commands in the terminal, in the root directory:
+Run the following commands in the terminal, in the ./src/ directory:
 
 ```
 javac pl/games/GameLotto.java
