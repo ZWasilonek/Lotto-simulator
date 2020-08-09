@@ -3,50 +3,56 @@ package pl.games;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.stream.IntStream;
 
 public class GameLotto {
 
     public static void main(String[] args) {
 
         Scanner sc = new Scanner(System.in);
-        int[] numbs = new int[6];
+        int maxNumbers = 6;
 
-        System.out.println("Enter 6 different numbers from 1 to 49");
+        System.out.println("Enter " + maxNumbers + " different numbers from 1 to 49");
 
-        boolean isSixNumbs = false;
+        int[] selectedNumbers = getSelectedNumbers(sc, maxNumbers);
+        int[] drawnNumbs = getRandomNumbers(maxNumbers);
+        int[] hitNumbers = getHitNumbers(drawnNumbs, selectedNumbers);
+
+        printScore(selectedNumbers, drawnNumbs, hitNumbers);
+
+    }
+
+    private static void printScore(int[] selectedNumbers, int[] drawnNumbs, int[] hitNumbers) {
+        System.out.println("Your numbers: " + Arrays.toString(selectedNumbers));
+        System.out.println("Drawn numbers " + Arrays.toString(drawnNumbs));
+        System.out.println("Your hits: " + (hitNumbers != null ? hitNumbers.length : 0));
+        System.out.println("Hit numbers: " + Arrays.toString(hitNumbers));
+    }
+
+    private static int[] getSelectedNumbers(Scanner sc, int maxNumbers) {
+        int[] numbs = new int[maxNumbers];
+        int[] copyOfSelectedNumbs = new int[0];
         int index = 0;
-        while (!isSixNumbs) {
+        while (copyOfSelectedNumbs.length < maxNumbers) {
             int num = getInt(sc);
             if (checkNumber(numbs, num)) {
                 numbs[index] = num;
                 index++;
-                if (index == 6) {
-                    isSixNumbs = true;
-                }
+                copyOfSelectedNumbs = Arrays.copyOf(numbs, index);
             }
         }
+        Arrays.sort(copyOfSelectedNumbs);
+        return copyOfSelectedNumbs;
+    }
 
-        Arrays.sort(numbs);
-        System.out.println("Your numbers: " + Arrays.toString(numbs));
-
-        int[] drawnNumbs = new int[6];
+    private static int[] getRandomNumbers(int index) {
+        int[] drawnNumbs = new int[index];
         while (index > 0) {
             int randomNum = new Random().nextInt(48) + 1;
             drawnNumbs[index - 1] = randomNum;
             index--;
         }
-
-        int amountOfNumbs = 0;
-        for (int i = 0; i < numbs.length; i++) {
-            for (int j = 0; j < drawnNumbs.length; j++) {
-                if (numbs[i] == drawnNumbs[j])
-                    amountOfNumbs++;
-            }
-        }
-
-        System.out.println("Drawn numbers " + Arrays.toString(drawnNumbs));
-        System.out.println("Your hits: " + amountOfNumbs);
-
+        return drawnNumbs;
     }
 
     static boolean checkNumber(int[] arr, int num) {
@@ -59,12 +65,38 @@ public class GameLotto {
         return false;
     }
 
-    static  int getInt(Scanner sc) {
+    static int getInt(Scanner sc) {
         while (!sc.hasNextInt()) {
             sc.next();
             System.out.println("The value entered must be a number");
         }
         return sc.nextInt();
+    }
+
+    static int[] getDrawNumbersWithoutHitNumber(int[] drawNumbers, int indexOfNumberToRemove) {
+        return IntStream.range(0, drawNumbers.length)
+                .filter(index -> index != indexOfNumberToRemove)
+                .map(index -> drawNumbers[index])
+                .toArray();
+    }
+
+    static int[] getHitNumbers(int[] drawnNumbs, int[] selectedNumbers) {
+        int amountOfNumbs = 0;
+        int[] hitNumbers = new int[6];
+        int[] copyHitNumbers = null;
+        int[] copyDrawNumbers = drawnNumbs;
+        for (int numb : selectedNumbers) {
+            for (int j = 0; j < copyDrawNumbers.length; j++) {
+                if (numb == copyDrawNumbers[j]) {
+                    hitNumbers[amountOfNumbs] = numb;
+                    amountOfNumbs++;
+                    copyHitNumbers = Arrays.copyOf(hitNumbers, amountOfNumbs);
+                    copyDrawNumbers = getDrawNumbersWithoutHitNumber(copyDrawNumbers, j);
+                    break;
+                }
+            }
+        }
+        return copyHitNumbers;
     }
 
 }
